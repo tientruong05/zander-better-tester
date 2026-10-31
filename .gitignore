@@ -1,0 +1,44 @@
+# ============================================================
+# aio-tester workspace — git ignore
+# ============================================================
+# The workspace will be pushed as a single repository.
+# Never commit local env files, dependencies or generated output.
+# ============================================================
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python / pytest / Playwright
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+playwright-report/
+test-results/
+.pytest-html/
+
+# JMeter
+*.jtl
+reports/
+apache-jmeter*/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
