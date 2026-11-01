@@ -9,10 +9,13 @@ export function parseSupabaseError(error: any, entityName: string): string {
   const message = error?.message || '';
   const details = error?.details || '';
 
-  // Unique constraint violation (duplicate slug, etc.)
+  // Unique constraint violation (duplicate slug, sku, etc.)
   if (code === '23505') {
     if (message.includes('slug') || details.includes('slug')) {
       return `Slug (đường dẫn URL) đã tồn tại. Vui lòng chọn một slug khác cho ${entityName} này.`;
+    }
+    if (message.includes('sku') || details.includes('sku')) {
+      return `SKU đã tồn tại. Vui lòng chọn một SKU khác cho ${entityName} này.`;
     }
     if (message.includes('name') || details.includes('name')) {
       return `Tên ${entityName} đã tồn tại. Vui lòng chọn tên khác.`;
@@ -27,7 +30,10 @@ export function parseSupabaseError(error: any, entityName: string): string {
 
   // Not null violation
   if (code === '23502') {
-    const column = details.match(/column "(.+?)"/)?.[1] || '';
+    const column =
+      (details.match(/column "(.+?)"/)?.[1] ||
+        message.match(/column "(.+?)"/)?.[1] ||
+        '');
     return `Vui lòng điền đầy đủ thông tin bắt buộc${column ? ` (${column})` : ''}.`;
   }
 

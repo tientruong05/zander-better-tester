@@ -385,6 +385,7 @@ row.get_by_test_id("admin-orders-status-select-9900000000001").select_option("pa
 | `admin-product-name-input` | Name |
 | `admin-product-name-en-input` | English name |
 | `admin-product-slug-input` | Slug |
+| `admin-product-sku-input` | SKU |
 | `admin-product-price-input` | Price |
 | `admin-product-sale-price-input` | Sale price |
 | `admin-product-stock-input` | Stock |

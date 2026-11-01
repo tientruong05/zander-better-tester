@@ -37,6 +37,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
     name: '',
     name_en: '',
     slug: '',
+    sku: '',
     description: '',
     description_en: '',
     price: '',
@@ -52,6 +53,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
 
   // Drag state
   const dragIdx = useRef<number | null>(null);
+  const skuEditedRef = useRef(false);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
         name: initialData.name || '',
         name_en: initialData.name_en || '',
         slug: initialData.slug || '',
+        sku: initialData.sku || '',
         description: initialData.description || '',
         description_en: initialData.description_en || '',
         price: initialData.price || '',
@@ -98,16 +101,24 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
+      if (name === 'sku') skuEditedRef.current = true;
       setFormData(prev => ({ ...prev, [name]: value }));
       
-      // Auto-generate slug from name if creating
+      // Auto-generate slug (and a default SKU) from name if creating.
+      // Stop auto-generating SKU once the user edits it manually.
       if (name === 'name' && !isEdit) {
         const slug = value.toLowerCase()
           .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
           .replace(/[^a-z0-9\s-]/g, '')
           .trim()
           .replace(/\s+/g, '-');
-        setFormData(prev => ({ ...prev, slug }));
+        setFormData(prev => ({
+          ...prev,
+          slug,
+          sku: skuEditedRef.current
+            ? prev.sku
+            : (slug ? `SKU-${slug.toUpperCase()}` : ''),
+        }));
       }
     }
   };
@@ -197,6 +208,10 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       notifyError('Lỗi', 'Slug không được để trống. Vui lòng nhập tên sản phẩm hoặc chỉnh sửa slug.');
       return;
     }
+    if (!formData.sku.trim()) {
+      notifyError('Lỗi', 'Vui lòng nhập SKU sản phẩm (mã duy nhất cho sản phẩm).');
+      return;
+    }
     if (!formData.price || Number(formData.price) <= 0) {
       notifyError('Lỗi', 'Giá bán phải lớn hơn 0');
       return;
@@ -219,6 +234,7 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
         name: formData.name,
         name_en: formData.name_en,
         slug: formData.slug,
+        sku: formData.sku.trim(),
         description: formData.description,
         description_en: formData.description_en,
         price: Number(formData.price),
@@ -326,7 +342,12 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
       router.refresh();
 
     } catch (error: any) {
-      console.error('Error saving product:', error);
+      console.error('Error saving product:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+      });
       notifyError('Lỗi', parseSupabaseError(error, 'sản phẩm'));
     } finally {
       setLoading(false);
@@ -376,6 +397,21 @@ export default function ProductForm({ initialData, isEdit = false }: ProductForm
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-[#0071e3] focus:border-[#0071e3]"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+            <input
+              type="text"
+              name="sku"
+              required
+              data-testid="admin-product-sku-input"
+              value={formData.sku}
+              onChange={handleInputChange}
+              placeholder="VD: SKU-IPHONE-17-AIR"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#0071e3] focus:border-[#0071e3]"
+            />
+            <p className="text-xs text-gray-400 mt-1">Mã duy nhất cho sản phẩm. Tự sinh từ tên, có thể sửa.</p>
           </div>
 
 
